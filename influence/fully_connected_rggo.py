@@ -21,7 +21,7 @@ class fully_connected_rggo(GenericNeuralNet):
         self.sess = tf.Session()
         K.set_session(self.sess)
 
-        self.model = self._build_model(input_shape)
+        self.model = self._build_model(input_dim)
 
         self.layer_names = [layer.name for layer in model._layers][1:]
         # First layer is automatically created and contains no weights
