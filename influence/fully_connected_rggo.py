@@ -12,54 +12,54 @@ from influence.dataset import DataSet
 
 class fully_connected_rggo(GenericNeuralNet):
 
-	def __init__(self, input_dim):
+    def __init__(self, input_dim):
 
-		self.input_dim = input_dim
+        self.input_dim = input_dim
         self.weight_decay = weight_decay
 
         # Make Keras use the same session as Tensorflow to avoid duplicities.
-		self.sess = tf.Session()
-		K.set_session(self.sess)
+        self.sess = tf.Session()
+        K.set_session(self.sess)
 
-		self.model = self._build_model(input_shape)
+        self.model = self._build_model(input_shape)
 
-		self.layer_names = [layer.name for layer in model._layers][1:]
-		# First layer is automatically created and contains no weights
+        self.layer_names = [layer.name for layer in model._layers][1:]
+        # First layer is automatically created and contains no weights
 
-		super(fully_connected_rggo, self).__init__()
-
-
-	def _build_model(self):
-		"""
-		It's mandatory to name every layer
-		"""
-
-		model = Sequential()
-		model.add(Dense(512, activation='relu', input_shape=(self.input_dim,), name="dense1"))
-		model.add(Dropout(0.5, name="dropout1"))
-		model.add(Dense(512, activation='relu', name="dense2"))
-		model.add(Dropout(0.5, name="dropout2"))
-		model.add(Dense(1, activation='sigmoid', name="dense3"))
+        super(fully_connected_rggo, self).__init__()
 
 
+    def _build_model(self):
+        """
+        It's mandatory to name every layer
+        """
 
-		""" TODO check if needed
-		model.compile(loss='binary_crossentropy',
-		              optimizer=Adam(),
-		              metrics=['accuracy'])
-      	"""
+        model = Sequential()
+        model.add(Dense(512, activation='relu', input_shape=(self.input_dim,), name="dense1"))
+        model.add(Dropout(0.5, name="dropout1"))
+        model.add(Dense(512, activation='relu', name="dense2"))
+        model.add(Dropout(0.5, name="dropout2"))
+        model.add(Dense(1, activation='sigmoid', name="dense3"))
 
 
-	def get_all_params(self):
-		"""
-		Required method. It's called in the base class' constructor
-		"""
+
+        """ TODO check if needed
+        model.compile(loss='binary_crossentropy',
+                      optimizer=Adam(),
+                      metrics=['accuracy'])
+        """
+
+
+    def get_all_params(self):
+        """
+        Required method. It's called in the base class' constructor
+        """
 
         all_params = []
 
         for layer_n in self.layer_names:        
 
-        	# First block to try
+            # First block to try
             for var_name in ['weights', 'biases']:
                 temp_tensor = tf.get_default_graph().get_tensor_by_name("%s/%s:0" % (layer, var_name))            
                 all_params.append(temp_tensor)   
@@ -84,16 +84,16 @@ class fully_connected_rggo(GenericNeuralNet):
         return input_placeholder, labels_placeholder
 
 
-	def inference(self, input_x):
-		raise NotImplementedError
+    def inference(self, input_x):
+        raise NotImplementedError
 
 
-	def predictions(self, input_x):
-		"""
-		Ensure input_x it's normalized before calling this method
-		"""
+    def predictions(self, input_x):
+        """
+        Ensure input_x it's normalized before calling this method
+        """
 
-		return model.predict(input_x)
+        return model.predict(input_x)
 
 
 # TODO 
