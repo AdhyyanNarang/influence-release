@@ -12,7 +12,7 @@ from influence.dataset import DataSet
 
 class fully_connected_rggo(GenericNeuralNet):
 
-    def __init__(self, input_dim):
+    def __init__(self, input_dim, weight_decay, **kwargs):
 
         self.input_dim = input_dim
         self.weight_decay = weight_decay
@@ -26,7 +26,7 @@ class fully_connected_rggo(GenericNeuralNet):
         self.layer_names = [layer.name for layer in model._layers][1:]
         # First layer is automatically created and contains no weights
 
-        super(fully_connected_rggo, self).__init__()
+        super(fully_connected_rggo, self).__init__(**kwargs)
 
 
     def _build_model(self):
