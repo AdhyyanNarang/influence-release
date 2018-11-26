@@ -23,31 +23,31 @@ class fully_connected_rggo(GenericNeuralNet):
 
         self.model = self._build_model(input_dim)
 
-        self.layer_names = [layer.name for layer in model._layers][1:]
+        self.layer_names = [layer.name for layer in self.model._layers][1:]
         # First layer is automatically created and contains no weights
 
         super(fully_connected_rggo, self).__init__(**kwargs)
 
 
-    def _build_model(self):
+    def _build_model(self, input_dim):
         """
         It's mandatory to name every layer
         """
 
         model = Sequential()
-        model.add(Dense(512, activation='relu', input_shape=(self.input_dim,), name="dense1"))
+        model.add(Dense(512, activation='relu', input_shape=(input_dim,), name="dense1"))
         model.add(Dropout(0.5, name="dropout1"))
         model.add(Dense(512, activation='relu', name="dense2"))
         model.add(Dropout(0.5, name="dropout2"))
         model.add(Dense(1, activation='sigmoid', name="dense3"))
-
-
 
         """ TODO check if needed
         model.compile(loss='binary_crossentropy',
                       optimizer=Adam(),
                       metrics=['accuracy'])
         """
+
+        return model
 
 
     def get_all_params(self):
