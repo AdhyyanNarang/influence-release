@@ -10,7 +10,7 @@ from influence.genericNeuralNet import GenericNeuralNet, variable, variable_with
 from influence.dataset import DataSet
 
 
-class fully_connected_rggo(GenericNeuralNet):
+class Fully_connected_rggo(GenericNeuralNet):
 
     def __init__(self, input_dim, weight_decay, **kwargs):
 
@@ -24,9 +24,9 @@ class fully_connected_rggo(GenericNeuralNet):
         self.model = self._build_model(input_dim)
 
         self.layer_names = [layer.name for layer in self.model._layers][1:]
-        # First layer is automatically created and contains no weights
+        # First layer is automatically created and contains no weights, hence we don't need it here.
 
-        super(fully_connected_rggo, self).__init__(**kwargs)
+        super(Fully_connected_rggo, self).__init__(**kwargs)
 
 
     def _build_model(self, input_dim):
