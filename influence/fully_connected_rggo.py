@@ -60,14 +60,14 @@ class Fully_connected_rggo(GenericNeuralNet):
         for layer_n in self.layer_names:        
 
             # First block to try
-            for var_name in ['weights', 'biases']:
-                temp_tensor = tf.get_default_graph().get_tensor_by_name("%s/%s:0" % (layer_n, var_name))
-                all_params.append(temp_tensor)   
+            #for var_name in ['weights', 'biases']:
+            #    temp_tensor = tf.get_default_graph().get_tensor_by_name("%s/%s:0" % (layer_n, var_name))
+            #    all_params.append(temp_tensor)
 
             # This block should work, but I want to try first block
-            #temp_layer = self.model.get_layer(layer_n)
-            #all_params.append(temp_layer.weights)
-            #all_params.append(temp_layer.bias)
+            temp_layer = self.model.get_layer(layer_n)
+            all_params.append(temp_layer.weights)
+            all_params.append(temp_layer.bias)
 
         return all_params
 
