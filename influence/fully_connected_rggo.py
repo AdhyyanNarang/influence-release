@@ -65,8 +65,7 @@ class Fully_connected_rggo(GenericNeuralNet):
 
             # This block should work, but I want to try first block
             temp_layer = self.model.get_layer(layer_n)
-            all_params.append(temp_layer.weights)
-            all_params.append(temp_layer.bias)
+            all_params += temp_layer.weights
 
         return all_params
 
