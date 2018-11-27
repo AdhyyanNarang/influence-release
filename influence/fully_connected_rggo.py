@@ -21,10 +21,12 @@ class Fully_connected_rggo(GenericNeuralNet):
         self.sess = tf.Session()
         K.set_session(self.sess)
 
+        self.logits_tensor = None
         self.model = self._build_model(input_dim)
 
-        self.layer_names = [layer.name for layer in self.model._layers][1:]
+        self.layer_names = [layer.name for layer in self.model._layers][1:-1]
         # First layer is automatically created and contains no weights, hence we don't need it here.
+        # Last layer is the activation function, hence it has no weights either
 
         super(Fully_connected_rggo, self).__init__(**kwargs)
 
@@ -32,6 +34,8 @@ class Fully_connected_rggo(GenericNeuralNet):
     def _build_model(self, input_dim):
         """
         It's mandatory to name every layer
+        Last layer must have a linear activation so we can obtain "logits" in the 'inference' method
+        and the desired activation must be added in the 'predictions' method
         """
 
         model = Sequential()
@@ -39,13 +43,9 @@ class Fully_connected_rggo(GenericNeuralNet):
         model.add(Dropout(0.5, name="dropout1"))
         model.add(Dense(512, activation='relu', name="dense2"))
         model.add(Dropout(0.5, name="dropout2"))
-        model.add(Dense(1, activation='sigmoid', name="dense3"))
+        model.add(Dense(1, activation='linear', name="dense3"))
+        #model.add(Activation('sigmoid', name="activation1")) # This layer is moved to 'predictions' method
 
-        """ TODO check if needed
-        model.compile(loss='binary_crossentropy',
-                      optimizer=Adam(),
-                      metrics=['accuracy'])
-        """
 
         return model
 
@@ -85,15 +85,13 @@ class Fully_connected_rggo(GenericNeuralNet):
 
 
     def inference(self, input_x):
-        raise NotImplementedError
+        logits_tensor = self.model(input_x)
+        return logits_tensor
 
 
-    def predictions(self, input_x):
-        """
-        Ensure input_x it's normalized before calling this method
-        """
-
-        return model.predict(input_x)
+    def predictions(self, logits):
+        preds = Activation('sigmoid', name="activation1")(logits)
+        return preds
 
 
 # TODO 
