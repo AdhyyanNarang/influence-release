@@ -3,7 +3,7 @@ import tensorflow as tf
 
 from tensorflow.keras import backend as K
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.layers import Dense, Dropout, Activation
 from tensorflow.keras.optimizers import Adam
 
 from influence.genericNeuralNet import GenericNeuralNet, variable, variable_with_weight_decay
