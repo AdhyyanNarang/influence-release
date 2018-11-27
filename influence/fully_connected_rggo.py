@@ -24,10 +24,6 @@ class Fully_connected_rggo(GenericNeuralNet):
         self.logits_tensor = None
         self.model = self._build_model(input_dim)
 
-        self.layer_names = [layer.name for layer in self.model._layers][1:-1]
-        # First layer is automatically created and contains no weights, hence we don't need it here.
-        # Last layer is the activation function, hence it has no weights either
-
         super(Fully_connected_rggo, self).__init__(**kwargs)
 
 
@@ -46,6 +42,9 @@ class Fully_connected_rggo(GenericNeuralNet):
         model.add(Dense(1, activation='linear', name="dense3"))
         #model.add(Activation('sigmoid', name="activation1")) # This layer is moved to 'predictions' method
 
+        self.layer_names = [layer.name for layer in self.model._layers if layer.name.startswith("dense")][1:]
+        # First layer is automatically created and contains no weights, hence we don't need it here.
+        # We need to reject dropout layers for the same reason
 
         return model
 
