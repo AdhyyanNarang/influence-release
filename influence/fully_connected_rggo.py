@@ -17,14 +17,14 @@ class Fully_connected_rggo(GenericNeuralNet):
         self.input_dim = input_dim
         self.weight_decay = weight_decay
 
+        # We need to call the constructos so we have a tf.Session ready
+        super(Fully_connected_rggo, self).__init__(**kwargs)
+
         # Make Keras use the same session as Tensorflow to avoid duplicities.
-        self.sess = tf.Session()
         K.set_session(self.sess)
 
         self.logits_tensor = None
         self.model = self._build_model(input_dim)
-
-        super(Fully_connected_rggo, self).__init__(**kwargs)
 
 
     def _build_model(self, input_dim):
@@ -59,13 +59,13 @@ class Fully_connected_rggo(GenericNeuralNet):
         for layer_n in self.layer_names:        
 
             # First block to try
-            #for var_name in ['weights', 'biases']:
-            #    temp_tensor = tf.get_default_graph().get_tensor_by_name("%s/%s:0" % (layer_n, var_name))
-            #    all_params.append(temp_tensor)
+            for var_name in ['kernel', 'biases']:
+                temp_tensor = self.session.get_tensor_by_name("%s/%s:0" % (layer_n, var_name))
+                all_params.append(temp_tensor)
 
             # This block should work, but I want to try first block
-            temp_layer = self.model.get_layer(layer_n)
-            all_params += temp_layer.weights
+            #temp_layer = self.model.get_layer(layer_n)
+            #all_params += temp_layer.weights
 
         return all_params
 
