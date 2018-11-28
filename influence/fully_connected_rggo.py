@@ -42,9 +42,8 @@ class Fully_connected_rggo(GenericNeuralNet):
         model.add(Dense(1, activation='linear', name="dense3"))
         #model.add(Activation('sigmoid', name="activation1")) # This layer is moved to 'predictions' method
 
-        self.layer_names = [layer.name for layer in model._layers if layer.name.startswith("dense")][1:]
-        # First layer is automatically created and contains no weights, hence we don't need it here.
-        # We need to reject dropout layers for the same reason
+        self.layer_names = [layer.name for layer in model.layers if layer.name.startswith("dense")]
+        # We need to reject dropout layers because doesn't contain weights, hence we don't need them here.
 
         return model
 
@@ -59,7 +58,7 @@ class Fully_connected_rggo(GenericNeuralNet):
         for layer_n in self.layer_names:        
 
             # First block to try
-            for var_name in ['kernel', 'biases']:
+            for var_name in ['kernel', 'bias']:
                 temp_tensor = self.session.get_tensor_by_name("%s/%s:0" % (layer_n, var_name))
                 all_params.append(temp_tensor)
 
