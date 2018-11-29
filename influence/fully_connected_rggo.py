@@ -60,7 +60,7 @@ class Fully_connected_rggo(GenericNeuralNet):
 
         # We need to extract the tf.Variables associated with the graph and flatten them (because this repository needs it)
         with tf.variable_scope('flattened_weights'):
-            flatten_weights = [tf.reshape(model.get_layer(elem).weights[0], [-1], name=elem) for elem in self.layer_names]
+            flatten_weights = [tf.reshape(self.model.get_layer(elem).weights[0], [-1], name=elem) for elem in self.layer_names]
 
 
         all_params = []
