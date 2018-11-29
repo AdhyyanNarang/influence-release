@@ -16,15 +16,10 @@ class Fully_connected_rggo(GenericNeuralNet):
 
         self.input_dim = input_dim
         self.weight_decay = weight_decay
-
-        # We need to call the constructos so we have a tf.Session ready
-        super(Fully_connected_rggo, self).__init__(**kwargs)
-
-        # Make Keras use the same session as Tensorflow to avoid duplicities.
-        K.set_session(self.sess)
-
-        self.logits_tensor = None
         self.model = self._build_model(input_dim)
+        self.logits_tensor = None
+
+        super(Fully_connected_rggo, self).__init__(**kwargs)
 
 
     def _build_model(self, input_dim):
