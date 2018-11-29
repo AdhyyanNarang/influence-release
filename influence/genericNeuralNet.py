@@ -104,10 +104,11 @@ class GenericNeuralNet(object):
             os.makedirs(self.train_dir)
 
         # Initialize session
-        config = tf.ConfigProto()        
-        self.sess = tf.Session(config=config)
-        K.set_session(self.sess)
-                
+        if not 'exist_tf_session' in kwargs:
+            config = tf.ConfigProto()
+            self.sess = tf.Session(config=config)
+            K.set_session(self.sess)
+
         # Setup input
         self.input_placeholder, self.labels_placeholder = self.placeholder_inputs()
         self.num_train_examples = self.data_sets.train.labels.shape[0]

@@ -19,6 +19,16 @@ class Fully_connected_rggo(GenericNeuralNet):
         self.model = self._build_model(input_dim)
         self.logits_tensor = None
 
+        # Initialize session
+        config = tf.ConfigProto()
+        self.sess = tf.Session(config=config)
+
+        # Make Keras use the same session as Tensorflow to avoid duplicities.
+        K.set_session(self.sess)
+
+        # We need to tell the parent class we already have a tf.Session
+        kwargs['exist_tf_session'] = True
+
         super(Fully_connected_rggo, self).__init__(**kwargs)
 
 
