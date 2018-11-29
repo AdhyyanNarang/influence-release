@@ -64,12 +64,13 @@ class Fully_connected_rggo(GenericNeuralNet):
 
 
         all_params = []
+        my_graph = self.sess.graph
 
         for layer_n in self.layer_names:        
 
             # First block to try
             for var_name in ['flattened_weights', 'bias']:
-                temp_tensor = self.sess.get_tensor_by_name("%s/%s:0" % (layer_n, var_name))
+                temp_tensor = my_graph.get_tensor_by_name("%s/%s:0" % (layer_n, var_name))
                 all_params.append(temp_tensor)
 
         return all_params
