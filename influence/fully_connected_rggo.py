@@ -53,18 +53,19 @@ class Fully_connected_rggo(GenericNeuralNet):
         Required method. It's called in the base class' constructor
         """
 
+        # We need to extract the tf.Variables associated with the graph and flatten them (because this repository needs it)
+        with tf.variable_scope('flattened_weights'):
+            flatten_weights = [tf.reshape(model.get_layer(elem).weights[0], [-1], name=elem) for elem in layer_names]
+
+
         all_params = []
 
         for layer_n in self.layer_names:        
 
             # First block to try
-            for var_name in ['kernel', 'bias']:
+            for var_name in ['flattened_weights', 'bias']:
                 temp_tensor = self.session.get_tensor_by_name("%s/%s:0" % (layer_n, var_name))
                 all_params.append(temp_tensor)
-
-            # This block should work, but I want to try first block
-            #temp_layer = self.model.get_layer(layer_n)
-            #all_params += temp_layer.weights
 
         return all_params
 
