@@ -16,8 +16,6 @@ class Fully_connected_rggo(GenericNeuralNet):
 
         self.input_dim = input_dim
         self.weight_decay = weight_decay
-        self.model = self._build_model(input_dim)
-        self.logits_tensor = None
 
         # Initialize session
         config = tf.ConfigProto()
@@ -28,6 +26,9 @@ class Fully_connected_rggo(GenericNeuralNet):
 
         # We need to tell the parent class we already have a tf.Session
         kwargs['exist_tf_session'] = True
+
+        self.model = self._build_model(input_dim)
+        self.logits_tensor = None
 
         super(Fully_connected_rggo, self).__init__(**kwargs)
 
