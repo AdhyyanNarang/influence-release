@@ -1,3 +1,4 @@
+import math
 
 import tensorflow as tf
 
@@ -27,18 +28,18 @@ class Fully_connected_rggo(GenericNeuralNet):
         # We need to tell the parent class we already have a tf.Session
         kwargs['exist_tf_session'] = True
 
-        self.model = self._build_model(input_dim)
-        self.logits_tensor = None
+        #self.model = self._build_model(input_dim)
+        #self.logits_tensor = None
 
         super(Fully_connected_rggo, self).__init__(**kwargs)
 
-
+    """
     def _build_model(self, input_dim):
-        """
+        
         It's mandatory to name every layer
         Last layer must have a linear activation so we can obtain "logits" in the 'inference' method
         and the desired activation must be added in the 'predictions' method
-        """
+        
 
         model = Sequential()
         model.add(Dense(512, activation='relu', input_shape=(input_dim,), name="dense1"))
@@ -52,55 +53,105 @@ class Fully_connected_rggo(GenericNeuralNet):
         # We need to reject dropout layers because doesn't contain weights, hence we don't need them here.
 
         return model
-
+    """
 
     def get_all_params(self):
-        """
-        Required method. It's called in the base class' constructor
-        """
-
-        # We need to extract the tf.Variables associated with the graph and flatten them (because this repository needs it)
-        with tf.variable_scope('flattened_weights'):
-            flatten_weights = [tf.reshape(self.model.get_layer(elem).weights[0], [-1], name=elem) for elem in self.layer_names]
-
+        layer_names = ['hidden1', 'hidden2', 'softmax_linear']
 
         all_params = []
-        my_graph = self.sess.graph
-
-        for layer_n in self.layer_names:        
-
-            # Weights (flattened version)
-            temp_tensor = my_graph.get_tensor_by_name("%s/%s:0" % ('flattened_weights', layer_n))
-            all_params.append(temp_tensor)
-
-            # Biases
-            temp_tensor = my_graph.get_tensor_by_name("%s/%s:0" % (layer_n, 'bias'))
-            all_params.append(temp_tensor)
-
-
+        for layer in layer_names:
+            for var_name in ['flattened_weights', 'biases']:
+                temp_tensor = tf.get_default_graph().get_tensor_by_name("%s/%s:0" % (layer, var_name))
+                all_params.append(temp_tensor)
 
         return all_params
 
 
     def placeholder_inputs(self):
         input_placeholder = tf.placeholder(
-            tf.float32, 
+            tf.float32,
             shape=(None, self.input_dim),
             name='input_placeholder')
         labels_placeholder = tf.placeholder(
-            tf.int32,             
+            tf.int32,
             shape=(None),
             name='labels_placeholder')
         return input_placeholder, labels_placeholder
 
 
-    def inference(self, input_x):
-        logits_tensor = self.model(input_x)
-        return logits_tensor
+    def inference(self, input_x, hidden1_units=8, hidden2_units=8, output_units=1):
+        """Build the MNIST model up to where it may be used for inference.
+        Args:
+            images: Images placeholder, from inputs().
+            hidden1_units: Size of the first hidden layer.
+            hidden2_units: Size of the second hidden layer.
+        Returns:
+            softmax_linear: Output tensor with the computed logits.
+        """
+
+        # Hidden 1
+        with tf.name_scope('hidden1'):
+
+            # Variable declaration
+            weights = tf.Variable(
+                tf.truncated_normal([self.input_dim, hidden1_units],
+                                    stddev=1.0 / math.sqrt(float(self.input_dim))),
+                                    name='weights',
+                                    dtype=tf.float32)
+            biases = tf.Variable(tf.zeros([hidden1_units]),
+                                    name='biases',
+                                    dtype=tf.float32)
+
+            # Operation
+            hidden1 = tf.nn.relu(tf.matmul(input_x, weights) + biases)
+
+            # We need to extract the tf.Variables associated with the graph and flatten them (because this repository needs it)
+            _ = tf.reshape(weights, [-1], name='flattened_weights')
+
+
+        # Hidden 2
+        with tf.name_scope('hidden2'):
+
+            # Variable declaration
+            weights = tf.Variable(
+                tf.truncated_normal([hidden1_units, hidden2_units],
+                                    stddev=1.0 / math.sqrt(float(hidden1_units))),
+                                    name='weights',
+                                    dtype=tf.float32)
+            biases = tf.Variable(tf.zeros([hidden2_units]),
+                                    name='biases',
+                                    dtype=tf.float32)
+
+            # Operation
+            hidden2 = tf.nn.relu(tf.matmul(hidden1, weights) + biases)
+
+            # We need to extract the tf.Variables associated with the graph and flatten them (because this repository needs it)
+            _ = tf.reshape(weights, [-1], name='flattened_weights')
+
+        # Linear
+        with tf.name_scope('softmax_linear'):
+
+            # Variable declaration
+            weights = tf.Variable(
+                tf.truncated_normal([hidden2_units, output_units],
+                                    stddev=1.0 / math.sqrt(float(hidden2_units))),
+                                    name='weights',
+                                    dtype=tf.float32)
+            biases = tf.Variable(tf.zeros([output_units]),
+                                    name='biases',
+                                    dtype=tf.float32)
+
+            # Operation
+            logits = tf.matmul(hidden2, weights) + biases
+
+            # We need to extract the tf.Variables associated with the graph and flatten them (because this repository needs it)
+            _ = tf.reshape(weights, [-1], name='flattened_weights')
+
+        return logits
 
 
     def predictions(self, logits):
-        preds = Activation('sigmoid', name="activation1")(logits)
+        preds = tf.nn.softmax(logits, name='preds')
         return preds
 
 
