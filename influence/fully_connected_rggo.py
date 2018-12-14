@@ -106,8 +106,9 @@ class Fully_connected_rggo(GenericNeuralNet):
             hidden1 = tf.nn.relu(tf.matmul(input_x, weights) + biases)
 
             # We need to extract the tf.Variables associated with the graph and flatten them (because this repository needs it)
-            _ = tf.reshape(weights, [-1], name='flattened_weights')
-
+            weights_flattened = tf.reshape(weights, [-1], name='flattened_weights')
+            weight_decay = tf.multiply(tf.nn.l2_loss(weights_flattened), self.weight_decay, name='weight_loss')
+            tf.add_to_collection('losses', weight_decay)
 
         # Hidden 2
         with tf.name_scope('hidden2'):
@@ -126,7 +127,9 @@ class Fully_connected_rggo(GenericNeuralNet):
             hidden2 = tf.nn.relu(tf.matmul(hidden1, weights) + biases)
 
             # We need to extract the tf.Variables associated with the graph and flatten them (because this repository needs it)
-            _ = tf.reshape(weights, [-1], name='flattened_weights')
+            weights_flattened = tf.reshape(weights, [-1], name='flattened_weights')
+            weight_decay = tf.multiply(tf.nn.l2_loss(weights_flattened), self.weight_decay, name='weight_loss')
+            tf.add_to_collection('losses', weight_decay)
 
         # Linear
         with tf.name_scope('softmax_linear'):
@@ -145,7 +148,9 @@ class Fully_connected_rggo(GenericNeuralNet):
             logits = tf.matmul(hidden2, weights) + biases
 
             # We need to extract the tf.Variables associated with the graph and flatten them (because this repository needs it)
-            _ = tf.reshape(weights, [-1], name='flattened_weights')
+            weights_flattened = tf.reshape(weights, [-1], name='flattened_weights')
+            weight_decay = tf.multiply(tf.nn.l2_loss(weights_flattened), self.weight_decay, name='weight_loss')
+            tf.add_to_collection('losses', weight_decay)
 
         return logits
 
