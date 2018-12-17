@@ -79,12 +79,14 @@ class Fully_connected_rggo(GenericNeuralNet):
         return input_placeholder, labels_placeholder
 
 
-    def inference(self, input_x, hidden1_units=8, hidden2_units=8, output_units=1):
+    def inference(self, input_x, hidden1_units=8, hidden2_units=8, output_units=2):
         """Build the MNIST model up to where it may be used for inference.
         Args:
             images: Images placeholder, from inputs().
             hidden1_units: Size of the first hidden layer.
             hidden2_units: Size of the second hidden layer.
+            output_units: Size of the output layer. Must be the same size of num_classes. Beware of binary classification,
+            even in that case we need to have 2 neurons, because we are going to do a softmax classification.
         Returns:
             softmax_linear: Output tensor with the computed logits.
         """
