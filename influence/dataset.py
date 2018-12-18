@@ -44,6 +44,9 @@ class DataSet(object):
         self._index_in_epoch += batch_size
         if self._index_in_epoch > self._num_examples:
 
+            # TODO BUG the last minibatch of the epoch may not contain the samples located at the end of the epoch
+            # as it is shuffled before grabbing those samples.
+
             # Shuffle the data
             perm = np.arange(self._num_examples)
             np.random.shuffle(perm)
