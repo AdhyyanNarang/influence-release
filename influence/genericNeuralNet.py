@@ -329,7 +329,6 @@ class GenericNeuralNet(object):
 
 
     def update_learning_rate(self, step):
-        assert self.num_train_examples % self.batch_size == 0
         num_steps_in_epoch = self.num_train_examples / self.batch_size
         epoch = step // num_steps_in_epoch
 
