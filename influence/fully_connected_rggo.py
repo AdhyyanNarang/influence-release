@@ -67,15 +67,15 @@ class Fully_connected_rggo(GenericNeuralNet):
         """
 
         # Hidden 1
-        with tf.name_scope('hidden1'):
+        with tf.variable_scope('hidden1'):
 
             weights = variable_with_weight_decay(
-                'hidden1/weights',
+                'weights',
                 [self.input_dim * hidden1_units],
                 stddev=1.0 / math.sqrt(float(self.input_dim)),
                 wd=self.weight_decay)
             biases = variable(
-                'hidden1/biases',
+                'biases',
                 [hidden1_units],
                 tf.constant_initializer(0.0))
             weights_reshaped = tf.reshape(weights, [self.input_dim, hidden1_units])
@@ -102,15 +102,15 @@ class Fully_connected_rggo(GenericNeuralNet):
             """
 
         # Hidden 2
-        with tf.name_scope('hidden2'):
+        with tf.variable_scope('hidden2'):
 
             weights = variable_with_weight_decay(
-                'hidden2/weights',
+                'weights',
                 [hidden1_units * hidden2_units],
                 stddev=1.0 / math.sqrt(float(self.input_dim)),
                 wd=self.weight_decay)
             biases = variable(
-                'hidden2/biases',
+                'biases',
                 [hidden2_units],
                 tf.constant_initializer(0.0))
             weights_reshaped = tf.reshape(weights, [hidden1_units, hidden2_units])
@@ -137,15 +137,15 @@ class Fully_connected_rggo(GenericNeuralNet):
             """
 
         # Linear
-        with tf.name_scope('softmax_linear'):
+        with tf.variable_scope('softmax_linear'):
 
             weights = variable_with_weight_decay(
-                'softmax_linear/weights',
+                'weights',
                 [hidden2_units * output_units],
                 stddev=1.0 / math.sqrt(float(self.input_dim)),
                 wd=self.weight_decay)
             biases = variable(
-                'softmax_linear/biases',
+                'biases',
                 [output_units],
                 tf.constant_initializer(0.0))
             weights_reshaped = tf.reshape(weights, [hidden2_units, output_units])
