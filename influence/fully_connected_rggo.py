@@ -36,7 +36,7 @@ class Fully_connected_rggo(GenericNeuralNet):
 
         all_params = []
         for layer in layer_names:
-            for var_name in ['flattened_weights', 'biases']:
+            for var_name in ['weights', 'biases']:
                 temp_tensor = tf.get_default_graph().get_tensor_by_name("%s/%s:0" % (layer, var_name))
                 all_params.append(temp_tensor)
 
@@ -69,6 +69,19 @@ class Fully_connected_rggo(GenericNeuralNet):
         # Hidden 1
         with tf.name_scope('hidden1'):
 
+            weights = variable_with_weight_decay(
+                'hidden1/weights',
+                [self.input_dim * hidden1_units],
+                stddev=1.0 / math.sqrt(float(self.input_dim)),
+                wd=self.weight_decay)
+            biases = variable(
+                'hidden1/biases',
+                [hidden1_units],
+                tf.constant_initializer(0.0))
+            weights_reshaped = tf.reshape(weights, [self.input_dim, hidden1_units])
+            hidden1 = tf.nn.relu(tf.matmul(input_x, weights_reshaped) + biases)
+
+            """
             # Variable declaration
             weights = tf.Variable(
                 tf.truncated_normal([self.input_dim, hidden1_units],
@@ -86,10 +99,24 @@ class Fully_connected_rggo(GenericNeuralNet):
             weights_flattened = tf.reshape(weights, [-1], name='flattened_weights')
             weight_decay = tf.multiply(tf.nn.l2_loss(weights_flattened), self.weight_decay, name='weight_loss')
             tf.add_to_collection('losses', weight_decay)
+            """
 
         # Hidden 2
         with tf.name_scope('hidden2'):
 
+            weights = variable_with_weight_decay(
+                'hidden2/weights',
+                [hidden1_units * hidden2_units],
+                stddev=1.0 / math.sqrt(float(self.input_dim)),
+                wd=self.weight_decay)
+            biases = variable(
+                'hidden2/biases',
+                [hidden2_units],
+                tf.constant_initializer(0.0))
+            weights_reshaped = tf.reshape(weights, [hidden1_units, hidden2_units])
+            hidden2 = tf.nn.relu(tf.matmul(hidden1, weights_reshaped) + biases)
+
+            """
             # Variable declaration
             weights = tf.Variable(
                 tf.truncated_normal([hidden1_units, hidden2_units],
@@ -107,10 +134,25 @@ class Fully_connected_rggo(GenericNeuralNet):
             weights_flattened = tf.reshape(weights, [-1], name='flattened_weights')
             weight_decay = tf.multiply(tf.nn.l2_loss(weights_flattened), self.weight_decay, name='weight_loss')
             tf.add_to_collection('losses', weight_decay)
+            """
 
         # Linear
         with tf.name_scope('softmax_linear'):
 
+            weights = variable_with_weight_decay(
+                'softmax_linear/weights',
+                [hidden2_units * output_units],
+                stddev=1.0 / math.sqrt(float(self.input_dim)),
+                wd=self.weight_decay)
+            biases = variable(
+                'softmax_linear/biases',
+                [output_units],
+                tf.constant_initializer(0.0))
+            weights_reshaped = tf.reshape(weights, [hidden2_units, output_units])
+            logits = tf.matmul(hidden2, weights_reshaped) + biases
+
+
+            """
             # Variable declaration
             weights = tf.Variable(
                 tf.truncated_normal([hidden2_units, output_units],
@@ -128,6 +170,7 @@ class Fully_connected_rggo(GenericNeuralNet):
             weights_flattened = tf.reshape(weights, [-1], name='flattened_weights')
             weight_decay = tf.multiply(tf.nn.l2_loss(weights_flattened), self.weight_decay, name='weight_loss')
             tf.add_to_collection('losses', weight_decay)
+            """
 
         return logits
 
