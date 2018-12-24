@@ -28,32 +28,8 @@ class Fully_connected_rggo(GenericNeuralNet):
         # We need to tell the parent class we already have a tf.Session
         kwargs['exist_tf_session'] = True
 
-        #self.model = self._build_model(input_dim)
-        #self.logits_tensor = None
-
         super(Fully_connected_rggo, self).__init__(**kwargs)
 
-    """
-    def _build_model(self, input_dim):
-        
-        It's mandatory to name every layer
-        Last layer must have a linear activation so we can obtain "logits" in the 'inference' method
-        and the desired activation must be added in the 'predictions' method
-        
-
-        model = Sequential()
-        model.add(Dense(512, activation='relu', input_shape=(input_dim,), name="dense1"))
-        model.add(Dropout(0.5, name="dropout1"))
-        model.add(Dense(512, activation='relu', name="dense2"))
-        model.add(Dropout(0.5, name="dropout2"))
-        model.add(Dense(1, activation='linear', name="dense3"))
-        #model.add(Activation('sigmoid', name="activation1")) # This layer is moved to 'predictions' method
-
-        self.layer_names = [layer.name for layer in model.layers if layer.name.startswith("dense")]
-        # We need to reject dropout layers because doesn't contain weights, hence we don't need them here.
-
-        return model
-    """
 
     def get_all_params(self):
         layer_names = ['hidden1', 'hidden2', 'softmax_linear']
@@ -80,9 +56,8 @@ class Fully_connected_rggo(GenericNeuralNet):
 
 
     def inference(self, input_x, hidden1_units=8, hidden2_units=8, output_units=2):
-        """Build the MNIST model up to where it may be used for inference.
+        """Build the model up to where it may be used for inference.
         Args:
-            images: Images placeholder, from inputs().
             hidden1_units: Size of the first hidden layer.
             hidden2_units: Size of the second hidden layer.
             output_units: Size of the output layer. Must be the same size of num_classes. Beware of binary classification,
