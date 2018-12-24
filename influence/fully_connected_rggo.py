@@ -55,7 +55,7 @@ class Fully_connected_rggo(GenericNeuralNet):
         return input_placeholder, labels_placeholder
 
 
-    def inference(self, input_x, hidden1_units=8, hidden2_units=8, output_units=2):
+    def inference(self, input_x, hidden1_units=512, hidden2_units=512, output_units=2):
         """Build the model up to where it may be used for inference.
         Args:
             hidden1_units: Size of the first hidden layer.
