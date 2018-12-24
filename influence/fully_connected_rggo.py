@@ -91,7 +91,7 @@ class Fully_connected_rggo(GenericNeuralNet):
             weights = variable_with_weight_decay(
                 'weights',
                 [hidden1_units * hidden2_units],
-                stddev=1.0 / math.sqrt(float(self.hidden1_units)),
+                stddev=1.0 / math.sqrt(float(hidden1_units)),
                 wd=self.weight_decay)
             biases = variable(
                 'biases',
