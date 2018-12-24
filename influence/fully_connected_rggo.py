@@ -178,15 +178,3 @@ class Fully_connected_rggo(GenericNeuralNet):
     def predictions(self, logits):
         preds = tf.nn.softmax(logits, name='preds')
         return preds
-
-
-# TODO 
-# Reescribir fijandome en BinaryLogisticRegressionWithLBFGS y la diferencia con la clase GenericNeuralNet
-"""
-def get_influence_on_test_loss(self, test_indices, train_idx, 
-        approx_type='cg', approx_params=None, force_refresh=True, test_description=None,
-        loss_type='normal_loss',
-        ignore_training_error=False,
-        ignore_hessian=False
-        ):
-"""
