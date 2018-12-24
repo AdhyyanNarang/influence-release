@@ -64,6 +64,10 @@ class Fully_connected_rggo(GenericNeuralNet):
             even in that case we need to have 2 neurons, because we are going to do a softmax classification.
         Returns:
             softmax_linear: Output tensor with the computed logits.
+
+        Notes: It's important to create weights like it's coded (using variable_with_weight_decay and creating them flattened
+        for reshaping them later. Otherwise, calling 'grad_loss_no_reg_op' in genericNeuralNet will not work (weight' gradients
+        will be None, however, bias' will be OK)
         """
 
         # Hidden 1
