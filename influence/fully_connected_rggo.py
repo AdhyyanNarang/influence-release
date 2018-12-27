@@ -28,6 +28,8 @@ class Fully_connected_rggo(GenericNeuralNet):
         # We need to tell the parent class we already have a tf.Session
         kwargs['exist_tf_session'] = True
 
+        self.hidden1_units, self.hidden2_units = kwargs.pop('hidden_units')
+
         super(Fully_connected_rggo, self).__init__(**kwargs)
 
 
@@ -55,7 +57,7 @@ class Fully_connected_rggo(GenericNeuralNet):
         return input_placeholder, labels_placeholder
 
 
-    def inference(self, input_x, hidden1_units=512, hidden2_units=512, output_units=2):
+    def inference(self, input_x, output_units=2):
         """Build the model up to where it may be used for inference.
         Args:
             hidden1_units: Size of the first hidden layer.
@@ -75,14 +77,14 @@ class Fully_connected_rggo(GenericNeuralNet):
 
             weights = variable_with_weight_decay(
                 'weights',
-                [self.input_dim * hidden1_units],
+                [self.input_dim * self.hidden1_units],
                 stddev=1.0 / math.sqrt(float(self.input_dim)),
                 wd=self.weight_decay)
             biases = variable(
                 'biases',
-                [hidden1_units],
+                [self.hidden1_units],
                 tf.constant_initializer(0.0))
-            weights_reshaped = tf.reshape(weights, [self.input_dim, hidden1_units])
+            weights_reshaped = tf.reshape(weights, [self.input_dim, self.hidden1_units])
             hidden1 = tf.nn.relu(tf.matmul(input_x, weights_reshaped) + biases)
 
         # Hidden 2
@@ -90,14 +92,14 @@ class Fully_connected_rggo(GenericNeuralNet):
 
             weights = variable_with_weight_decay(
                 'weights',
-                [hidden1_units * hidden2_units],
-                stddev=1.0 / math.sqrt(float(hidden1_units)),
+                [self.hidden1_units * self.hidden2_units],
+                stddev=1.0 / math.sqrt(float(self.hidden1_units)),
                 wd=self.weight_decay)
             biases = variable(
                 'biases',
-                [hidden2_units],
+                [self.hidden2_units],
                 tf.constant_initializer(0.0))
-            weights_reshaped = tf.reshape(weights, [hidden1_units, hidden2_units])
+            weights_reshaped = tf.reshape(weights, [self.hidden1_units, self.hidden2_units])
             hidden2 = tf.nn.relu(tf.matmul(hidden1, weights_reshaped) + biases)
 
         # Linear
@@ -105,14 +107,14 @@ class Fully_connected_rggo(GenericNeuralNet):
 
             weights = variable_with_weight_decay(
                 'weights',
-                [hidden2_units * output_units],
-                stddev=1.0 / math.sqrt(float(hidden2_units)),
+                [self.hidden2_units * output_units],
+                stddev=1.0 / math.sqrt(float(self.hidden2_units)),
                 wd=self.weight_decay)
             biases = variable(
                 'biases',
                 [output_units],
                 tf.constant_initializer(0.0))
-            weights_reshaped = tf.reshape(weights, [hidden2_units, output_units])
+            weights_reshaped = tf.reshape(weights, [self.hidden2_units, output_units])
             logits = tf.matmul(hidden2, weights_reshaped) + biases
 
         return logits
