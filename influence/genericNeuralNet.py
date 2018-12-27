@@ -378,7 +378,11 @@ class GenericNeuralNet(object):
             if verbose:
                 if step % 1000 == 0:
                     # Print status to stdout.
-                    print('Step %d: loss = %.8f (%.3f sec)' % (step, loss_val, duration))
+
+                    num_steps_in_epoch = self.num_train_examples / self.batch_size
+                    epoch = step // num_steps_in_epoch
+
+                    print('Step %d (Epoch %d): loss = %.8f (%.3f sec)' % (step, epoch, loss_val, duration))
 
             # Save a checkpoint and evaluate the model periodically.
             if (step + 1) % 100000 == 0 or (step + 1) == num_steps:
