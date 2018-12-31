@@ -56,8 +56,7 @@ class Fully_connected_rggo(GenericNeuralNet):
             name='labels_placeholder')
         return input_placeholder, labels_placeholder
 
-
-    def inference(self, input_x, output_units=2):
+    def inference(self, input_x, keep_probs_ph, output_units=2):
         """Build the model up to where it may be used for inference.
         Args:
             hidden1_units: Size of the first hidden layer.
@@ -87,6 +86,8 @@ class Fully_connected_rggo(GenericNeuralNet):
             weights_reshaped = tf.reshape(weights, [self.input_dim, self.hidden1_units])
             hidden1 = tf.nn.relu(tf.matmul(input_x, weights_reshaped) + biases)
 
+        hidden1 = tf.nn.dropout(hidden1, keep_prob=keep_probs_ph)
+
         # Hidden 2
         with tf.variable_scope('hidden2'):
 
@@ -101,6 +102,8 @@ class Fully_connected_rggo(GenericNeuralNet):
                 tf.constant_initializer(0.0))
             weights_reshaped = tf.reshape(weights, [self.hidden1_units, self.hidden2_units])
             hidden2 = tf.nn.relu(tf.matmul(hidden1, weights_reshaped) + biases)
+
+        hidden2 = tf.nn.dropout(hidden2, keep_prob=keep_probs_ph)
 
         # Linear
         with tf.variable_scope('softmax_linear'):

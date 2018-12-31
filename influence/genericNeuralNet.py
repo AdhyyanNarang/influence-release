@@ -116,7 +116,7 @@ class GenericNeuralNet(object):
         
         # Setup inference and training
         if self.keep_probs is not None:
-            self.keep_probs_placeholder = tf.placeholder(tf.float32, shape=(2))
+            self.keep_probs_placeholder = tf.placeholder(tf.float32)
             self.logits = self.inference(self.input_placeholder, self.keep_probs_placeholder)
         elif hasattr(self, 'inference_needs_labels'):            
             self.logits = self.inference(self.input_placeholder, self.labels_placeholder)
@@ -303,13 +303,21 @@ class GenericNeuralNet(object):
                 self.data_sets.test)
 
         else:
+            feed_dict = self.all_train_feed_dict
+            if self.keep_probs is not None:
+                feed_dict[self.keep_probs_placeholder] = 1.0 # Disable dropout for computing metrics
+
             grad_loss_val, loss_no_reg_val, loss_val, train_acc_val = self.sess.run(
                 [self.grad_total_loss_op, self.loss_no_reg, self.total_loss, self.accuracy_op], 
-                feed_dict=self.all_train_feed_dict)
+                feed_dict=feed_dict)
+
+            feed_dict = self.all_test_feed_dict
+            if self.keep_probs is not None:
+                feed_dict[self.keep_probs_placeholder] = 1.0  # Disable dropout for computing metrics
 
             test_loss_val, test_acc_val = self.sess.run(
                 [self.loss_no_reg, self.accuracy_op], 
-                feed_dict=self.all_test_feed_dict)
+                feed_dict=feed_dict)
 
         print('Train loss (w reg) on all data: %s' % loss_val)
         print('Train loss (w/o reg) on all data: %s' % loss_no_reg_val)
@@ -363,14 +371,20 @@ class GenericNeuralNet(object):
 
             if step < iter_to_switch_to_batch:                
                 feed_dict = self.fill_feed_dict_with_batch(self.data_sets.train)
+                if self.keep_probs is not None:
+                    feed_dict[self.keep_probs_placeholder] = self.keep_probs
                 _, loss_val = sess.run([self.train_op, self.total_loss], feed_dict=feed_dict)
                 
             elif step < iter_to_switch_to_sgd:
-                feed_dict = self.all_train_feed_dict          
+                feed_dict = self.all_train_feed_dict
+                if self.keep_probs is not None:
+                    feed_dict[self.keep_probs_placeholder] = self.keep_probs
                 _, loss_val = sess.run([self.train_op, self.total_loss], feed_dict=feed_dict)
 
             else: 
-                feed_dict = self.all_train_feed_dict          
+                feed_dict = self.all_train_feed_dict
+                if self.keep_probs is not None:
+                    feed_dict[self.keep_probs_placeholder] = self.keep_probs
                 _, loss_val = sess.run([self.train_sgd_op, self.total_loss], feed_dict=feed_dict)          
 
             duration = time.time() - start_time
@@ -534,6 +548,10 @@ class GenericNeuralNet(object):
             feed_dict = self.fill_feed_dict_with_batch(self.data_sets.train, batch_size=batch_size)
             # Can optimize this
             feed_dict = self.update_feed_dict_with_v_placeholder(feed_dict, v)
+
+            if self.keep_probs is not None:
+                feed_dict[self.keep_probs_placeholder] = 1.0  # Disable dropout
+
             hessian_vector_val_temp = self.sess.run(self.hessian_vector, feed_dict=feed_dict)
             if hessian_vector_val is None:
                 hessian_vector_val = [b / float(num_iter) for b in hessian_vector_val_temp]
@@ -581,7 +599,11 @@ class GenericNeuralNet(object):
             v = self.vec_to_list(x)
             idx_to_remove = 5
 
-            single_train_feed_dict = self.fill_feed_dict_with_one_ex(self.data_sets.train, idx_to_remove)      
+            single_train_feed_dict = self.fill_feed_dict_with_one_ex(self.data_sets.train, idx_to_remove)
+
+            if self.keep_probs is not None:
+                single_train_feed_dict[self.keep_probs_placeholder] = 1.0  # Disable dropout
+
             train_grad_loss_val = self.sess.run(self.grad_total_loss_op, feed_dict=single_train_feed_dict)
             predicted_loss_diff = np.dot(np.concatenate(v), np.concatenate(train_grad_loss_val)) / self.num_train_examples
 
@@ -629,6 +651,9 @@ class GenericNeuralNet(object):
                 end = int(min((i+1) * batch_size, len(test_indices)))
 
                 test_feed_dict = self.fill_feed_dict_with_some_ex(self.data_sets.test, test_indices[start:end])
+
+                if self.keep_probs is not None:
+                    test_feed_dict[self.keep_probs_placeholder] = 1.0  # Disable dropout
 
                 temp = self.sess.run(op, feed_dict=test_feed_dict)
 
@@ -698,7 +723,11 @@ class GenericNeuralNet(object):
             num_to_remove = len(train_idx)
             predicted_loss_diffs = np.zeros([num_to_remove])
             for counter, idx_to_remove in enumerate(train_idx):            
-                single_train_feed_dict = self.fill_feed_dict_with_one_ex(self.data_sets.train, idx_to_remove)      
+                single_train_feed_dict = self.fill_feed_dict_with_one_ex(self.data_sets.train, idx_to_remove)
+
+                if self.keep_probs is not None:
+                    single_train_feed_dict[self.keep_probs_placeholder] = 1.0  # Disable dropout
+
                 train_grad_loss_val = self.sess.run(self.grad_total_loss_op, feed_dict=single_train_feed_dict)
                 predicted_loss_diffs[counter] = np.dot(np.concatenate(inverse_hvp), np.concatenate(train_grad_loss_val)) / self.num_train_examples
                 
