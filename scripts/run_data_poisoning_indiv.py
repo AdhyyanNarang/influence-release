@@ -1,5 +1,7 @@
 import IPython
 import numpy as np
+import sys
+sys.path.append('../')
 
 from load_animals import load_animals, load_dogfish_with_koda, load_dogfish_with_orig_and_koda
 

@@ -1,0 +1,2 @@
+model_checkpoint_path: "dogfish_900_300_inception_onlytop_wd-0.001-checkpoint-0"
+all_model_checkpoint_paths: "dogfish_900_300_inception_onlytop_wd-0.001-checkpoint-0"
