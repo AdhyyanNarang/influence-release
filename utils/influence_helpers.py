@@ -245,6 +245,7 @@ def sync_top_model_to_full_model(top_model, full_model):
 
 
 def data_poisoning_attack(model, sess, z_test_bottleneck_list, X, X_top, y, poison_indices, reg, step_size, num_iters, bounding_box_radius, bottleneck_layer, verbose=True):
+    latest_confidence = 0
     #Save original model weights so they can be restored after poisoning
     original_weights = model.get_weights()
     #Copy input data, because we will modify them in place to reduce copying overhead
@@ -281,11 +282,12 @@ def data_poisoning_attack(model, sess, z_test_bottleneck_list, X, X_top, y, pois
         sync_top_model_to_full_model(top_model, model)
         #Print the new confidence scores for z_test
         if verbose:
-            print(top_model.predict(np.array([z[0] for z in z_test_bottleneck_list])))
+            latest_confidence = top_model.predict(np.array([z[0] for z in z_test_bottleneck_list]))
+            print(latest_confidence)
     #Restore original weights
     model.set_weights(original_weights)
     #Return the poisoned points
-    return X[poison_indices]
+    return X[poison_indices], latest_confidence
 
 
 def grad_influence_wrt_input(model, sess, z_test_bottleneck_list, X, X_top, y, reg, get_norms=True, print_every=0):
