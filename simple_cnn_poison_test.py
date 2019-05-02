@@ -72,12 +72,10 @@ if not features_computed:
 train_bottleneck_features = np.load("precomputed_features/train_bottleneck_features.npy")
 test_bottleneck_features = np.load("precomputed_features/test_bottleneck_features.npy")
 
-
 #Reduce training set sizes
 train_bottleneck_features = train_bottleneck_features[:1000]
 x_train = x_train[:1000]
 y_train = y_train[:1000]
-
 
 
 lamb = 1
@@ -116,10 +114,6 @@ plt.imshow(orig, cmap="gray")
 plt.figure(3)
 plt.imshow(poison_test, cmap="gray")
 plt.show()
-
-
-
-
 
 
 

@@ -17,6 +17,7 @@ from simple_kerasinstance import SimpleCNN
 import matplotlib
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
+import os
 
 class InfluencePoisoner:
 
@@ -24,37 +25,39 @@ class InfluencePoisoner:
                  dataset,
                  model,
                  model_weights_path = None,
-                 model_bottleneck_features = None,
-                 sorted_train_indices = None,
+                 bottleneck_features_path = None,
+                 reduced_train_size = None,
                  num_test_to_poison = 1,
                  num_train_to_use = 10,
                  step_size = 0.01,
                  num_iters = 100,
                  bounding_box_radius = 0.05,
-                 bottleneck_features = -1
+                 bottleneck_layer = -1
                 ):
 
         #Dataset, model etc.
         self.dataset = dataset
         self.model = model
         self.model_weights_path = model_weights_path
-        self.bottleneck_features = model_bottleneck_features
-        self.sorted_train_indices = sorted_train_indices
+        self.bottleneck_features_path = bottleneck_features_path
+        if reduced_train_size == None:
+            self.reduced_size = len(dataset[0])
+        else:
+            self.reduced_size = reduced_train_size
 
         #Attack parameters
         self.num_test_to_poison = num_test_to_poison
         self.num_train_to_use = num_train_to_use
-        self.sorted_train_indices = sorted_train_indices
         self.step_size = step_size
         self.num_iters = num_iters
         self.bounding_box_radius = bounding_box_radius
-        self.bottleneck_features = bottleneck_features
+        self.bottleneck_layer = bottleneck_layer
 
         #Tensorflow session
-        sess = K.get_session()
+        self.sess = K.get_session()
 
 
-    def poison_dataset(self)
+    def poison_dataset(self):
         """
         Completes the influence poisoning attack on self.model
         trained on self.dataset for the first self.num_test_to_poison
@@ -79,11 +82,17 @@ class InfluencePoisoner:
         else:
             self.model.load_weights(self.model_weights_path)
 
-        #Compute Bottleneck features
+        #Compute Bottleneck features: Note that we use the full train set to compute the bottleneck features
         train_bottleneck_features = None
         test_bottleneck_features = None
 
-        if self.bottleneck_features == None:
+        #Reduce train set size before training top model
+        x_train = x_train[:self.reduced_size]
+        y_train = y_train[:self.reduced_size]
+
+        #TODO: Will have to make the indexing here more generic for
+        #other models
+        if self.bottleneck_features_path == None:
             print("COMPUTING TRAIN BOTTLENECK FEATURES")
             train_bottleneck_features = []
             for k in range(10):
@@ -96,23 +105,22 @@ class InfluencePoisoner:
             test_bottleneck_features = compute_bottleneck_features(self.model, sess, x_test, -1)
 
         else:
-            train_path = sys.path.append(self.bottleneck_features_path, 'train_bottleneck_features.npy')
-            test_path = sys.path.append(self.bottleneck_features_path, 'test_bottleneck_features.npy')
-            train_bottleneck_features = np.load(train_path)
+            train_path = os.path.join(self.bottleneck_features_path, 'train_bottleneck_features.npy')
+            test_path = os.path.join(self.bottleneck_features_path, 'test_bottleneck_features.npy')
+            train_bottleneck_features = np.load(train_path)[:self.reduced_size]
             test_bottleneck_features = np.load(test_path)
 
         #Top model stuff: 
         lamb = 1
         top_model = construct_top_model(512, 1, "binary_crossentropy", True, lamb)
         train_top_model(top_model, train_bottleneck_features, y_train, lamb)
-        sync_top_model_to_full_model(top_model, model)
+        sync_top_model_to_full_model(top_model, self.model)
 
         #Correct indices
         preds = top_model.predict(test_bottleneck_features)
         rounded_preds = np.round(preds)
         correct_indices = np.where(np.logical_and((rounded_preds.flatten() == y_test), (y_test == 0), (preds.flatten() > 0.25)))[0]
 
-        #Sorted Train Indices
         confidences_before = []
         confidences_after = []
 
@@ -127,7 +135,7 @@ class InfluencePoisoner:
             grad_norms = grad_influence_wrt_input(self.model, self.sess, z_bottleneck_test, x_train, train_bottleneck_features, y_train, lamb, print_every=500)
             sorted_indices = list(reversed(np.argsort(grad_norms)))
 
-            _ , confidence_after = data_poisoning_attack(self.model, self.sess, z_bottleneck_test, x_train, train_bottleneck_features, y_train, self.sorted_indices[:self.num_train_to_use], lamb, self.step_size, self.num_iters, self.bounding_box_radius, self.bottleneck_layer)
+            _ , confidence_after = data_poisoning_attack(self.model, self.sess, z_bottleneck_test, x_train, train_bottleneck_features, y_train, sorted_indices[:self.num_train_to_use], lamb, self.step_size, self.num_iters, self.bounding_box_radius, self.bottleneck_layer)
             confidences_after.append(confidences_after)
 
         return confidences_before, confidences_after
