@@ -88,7 +88,7 @@ def hessian_binary_crossentropy(weights, bias, X, y, reg):
     #REGULARIZE HESS
     scaled_hess[np.arange(scaled_hess.shape[0]), np.arange(scaled_hess.shape[1])] += 2 * reg
     return scaled_hess
-    
+
 
 def cho_solve(A, b):
     #Want to solve Ax = b, equivalent to LL*x = b
@@ -194,7 +194,7 @@ def create_projection_fn(X_orig, bounding_box_radius):
             -np.zeros_like(X_orig),
             X_orig - bounding_box_radius)
     upper_bound = np.minimum(
-            np.ones_like(X_orig),
+            256 * np.ones_like(X_orig),
             X_orig + bounding_box_radius)
 
     def projection_fn(X):
@@ -439,9 +439,3 @@ def poison_with_exact_hessian(model, sess, z_test, X, y, poison_index):
 #     grad_wrt_input = sess.run(grads, feed_dict=feed_dict)
 #     return get_inverse_hvp_keras(model, sess, grad_wrt_input, X, y,
 #                                        batch_size=batch_size, scale=scale, damping=damping, num_samples=num_samples, recursion_depth=recursion_depth)
-
-
-
-
-
-
